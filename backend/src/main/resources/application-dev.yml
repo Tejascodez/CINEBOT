@@ -1,0 +1,25 @@
+# Local development only. Never used in prod: prod must supply JWT_SECRET via environment/secret manager.
+spring:
+  flyway:
+    # dev-seed is a no-op now: movies come only from a TMDB sync (theatres/shows: DevDataSeeder)
+    locations: classpath:db/migration,classpath:db/dev-seed
+
+cinebot:
+  jwt:
+    secret: dev-only-secret-0123456789-abcdefghijklmnop-change-me
+  payment:
+    faults:
+      enabled: true
+    simulator:
+      key-secret: dev-only-payment-key-secret-0123456789
+      webhook-secret: dev-only-payment-webhook-secret-0123456789
+      duplicate-webhooks: true   # every webhook arrives twice in dev: de-duplication is always exercised
+  ticket:
+    secret: dev-only-ticket-secret-0123456789-abcdef
+  bootstrap-admin:
+    email: admin@cinebot.dev
+    password: Admin@12345
+
+logging:
+  level:
+    com.cinebot: DEBUG

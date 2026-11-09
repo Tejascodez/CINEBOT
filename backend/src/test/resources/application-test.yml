@@ -1,0 +1,38 @@
+cinebot:
+  jwt:
+    secret: test-secret-0123456789-abcdefghijklmnopqrstuvwxyz
+  booking:
+    sweeper:
+      enabled: false                # tests trigger ExpiredLockSweep explicitly, deterministically
+  payment:
+    reconciler:
+      enabled: false                # tests call PaymentReconciliation.runOnce() explicitly
+    faults:
+      enabled: true
+    simulator:
+      key-secret: test-payment-key-secret-0123456789
+      webhook-secret: test-payment-webhook-secret-0123456789
+      webhook-delivery: NONE        # tests deliver signed webhooks themselves via MockMvc
+      refund-processing-delay: PT0S
+  ticket:
+    secret: test-ticket-secret-0123456789-abcdefgh
+  outbox:
+    relay:
+      enabled: false                # tests call OutboxProcessor.processBatch() explicitly
+  tmdb:
+    read-access-token: test-token   # TmdbClient is mocked in ITs; this only makes isConfigured() realistic
+
+spring:
+  data:
+    redis:
+      # The shared dev machine is often under load; 250 ms (production) makes Redis assertions flaky here.
+      timeout: 2s
+      connect-timeout: 2s
+  jpa:
+    properties:
+      hibernate:
+        generate_statistics: true    # lets tests assert SQL statement counts (N+1 regression guard)
+
+logging:
+  level:
+    org.hibernate.engine.internal.StatisticalLoggingSessionEventListener: WARN

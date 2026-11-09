@@ -1,0 +1,37 @@
+# Local development infrastructure.
+# Kafka + Kafka UI are added in Week 6, when their module lands.
+name: cinebot
+
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: cinebot-postgres
+    environment:
+      POSTGRES_DB: cinebot
+      POSTGRES_USER: cinebot
+      POSTGRES_PASSWORD: cinebot
+    ports:
+      - "${CINEBOT_DB_PORT:-5433}:5432"   # 5433 on the host avoids clashing with other local Postgres instances
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U cinebot -d cinebot"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+  redis:
+    image: redis:7-alpine
+    container_name: cinebot-redis
+    # Seat-lock keys are ephemeral (TTL = lock TTL) and Postgres is the source of truth: no persistence needed.
+    command: ["redis-server", "--save", "", "--appendonly", "no"]
+    ports:
+      - "${CINEBOT_REDIS_PORT:-6381}:6379"   # 6379/6380 are used by other local projects
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+volumes:
+  postgres-data:
